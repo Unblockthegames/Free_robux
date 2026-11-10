@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Notification Demo</title>
+</head>
+<body>
+
+    <h1>ChromeOS Notification Demo</h1>
+    <p>Click the button below to trigger a system-level popup message.</p>
+    
+    <button id="notify-btn">Show Notification</button>
+
+    <script>
+        const button = document.getElementById('notify-btn');
+
+        button.addEventListener('click', async () => {
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop notifications.");
+                return;
+            }
+
+            if (Notification.permission !== "granted") {
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") {
+                    alert("Permission denied. You must allow notifications in your site settings.");
+                    return;
+                }
+            }
+
+            new Notification("Hello from ChromeOS!", {
+                body: "This is a custom popup message from your website.",
+                icon: "https://placeholder.com"
+            });
+        });
+    </script>
+
+</body>
+</html>
