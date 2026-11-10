@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Alert</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0d0d14;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e4e4e8;
+            overflow: hidden;
+        }
+
+        /* subtle scan-line effect */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 40, 40, 0.015) 2px,
+                rgba(255, 40, 40, 0.015) 4px
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .alert-box {
+            position: relative;
+            z-index: 1;
+            width: 92%;
+            max-width: 460px;
+            background: #16161f;
+            border: 1px solid #ff2a2a;
+            border-radius: 10px;
+            box-shadow:
+                0 0 0 1px rgba(255, 42, 42, 0.25),
+                0 0 40px rgba(255, 42, 42, 0.25),
+                0 25px 50px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            animation: alert-glow 2.8s ease-in-out infinite;
+        }
+
+        @keyframes alert-glow {
+            0%, 100% {
+                box-shadow:
+                    0 0 0 1px rgba(255, 42, 42, 0.25),
+                    0 0 30px rgba(255, 42, 42, 0.2),
+                    0 25px 50px rgba(0, 0, 0, 0.6);
+            }
+            50% {
+                box-shadow:
+                    0 0 0 1px rgba(255, 42, 42, 0.45),
+                    0 0 55px rgba(255, 42, 42, 0.4),
+                    0 25px 50px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        /* top red bar */
+        .alert-top {
+            background: linear-gradient(90deg, #b71c1c, #e53935, #b71c1c);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .shield-icon {
+            width: 34px;
+            height: 34px;
+            background: #fff;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .shield-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: #c62828;
+        }
+
+        .alert-top h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        .content {
+            padding: 26px 22px 22px;
+        }
+
+        .content h2 {
+            font-size: 1.05rem;
+            color: #ff5252;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .content > p {
+            font-size: 0.92rem;
+            line-height: 1.55;
+            color: #b8b8c4;
+            margin-bottom: 20px;
+        }
+
+        .details {
+            background: #0f0f17;
+            border: 1px solid #2a2a35;
+            border-left: 4px solid #ff2a2a;
+            border-radius: 0 6px 6px 0;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+            font-size: 0.85rem;
+        }
+
+        .details .label {
+            color: #ff8a80;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .details ul {
+            list-style: none;
+            color: #9999a8;
+        }
+
+        .details li {
+            padding: 4px 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .details li span.key {
+            color: #777;
+            min-width: 90px;
+        }
+
+        .details li span.val {
+            color: #d0d0d8;
+        }
+
+        .details li span.high {
+            color: #ff5252;
+            font-weight: 600;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 13px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        #notify-btn {
+            background: linear-gradient(180deg, #e53935, #c62828);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(198, 40, 40, 0.45);
+        }
+
+        #notify-btn:hover {
+            background: linear-gradient(180deg, #ef5350, #d32f2f);
+            box-shadow: 0 6px 18px rgba(198, 40, 40, 0.55);
+        }
+
+        #dismiss-btn {
+            background: #22222e;
+            color: #c0c0c8;
+            border: 1px solid #333344;
+        }
+
+        #dismiss-btn:hover {
+            background: #2c2c3a;
+            color: #e0e0e8;
+        }
+
+        .status {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.82rem;
+            min-height: 1.3em;
+            color: #666;
+        }
+
+        .status.ok { color: #66bb6a; }
+        .status.err { color: #ef5350; }
+
+        /* small footer note */
+        .footer {
+            text-align: center;
+            padding: 0 22px 16px;
+            font-size: 0.72rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="alert-box">
+        <div class="alert-top">
+            <div class="shield-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                </svg>
+            </div>
+            <h1>Security Alert</h1>
+        </div>
+
+        <div class="content">
+            <h2>Suspicious Activity Detected</h2>
+            <p>
+                A potential threat has been blocked on this device.
+                Immediate review is recommended to protect your accounts and data.
+            </p>
+
+            <div class="details">
+                <span class="label">Threat Details</span>
+                <ul>
+                    <li>
+                        <span class="key">Type</span>
+                        <span class="val">Unauthorized access attempt</span>
+                    </li>
+                    <li>
+                        <span class="key">Source</span>
+                        <span class="val">External connection</span>
+                    </li>
+                    <li>
+                        <span class="key">Risk Level</span>
+                        <span class="val high">HIGH</span>
+                    </li>
+                    <li>
+                        <span class="key">Status</span>
+                        <span class="val">Blocked • Just now</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="buttons">
+                <button id="notify-btn">Send System Alert</button>
+                <button id="dismiss-btn">Dismiss</button>
+            </div>
+
+            <div class="status" id="status"></div>
+        </div>
+
+        <div class="footer">System Security • Protected</div>
+    </div>
+
+    <script>
+        const notifyBtn = document.getElementById('notify-btn');
+        const dismissBtn = document.getElementById('dismiss-btn');
+        const statusEl = document.getElementById('status');
+
+        function setStatus(msg, type = '') {
+            statusEl.textContent = msg;
+            statusEl.className = 'status ' + type;
+        }
+
+        notifyBtn.addEventListener('click', async () => {
+            if (!('Notification' in window)) {
+                setStatus('Notifications are not supported in this browser.', 'err');
+                return;
+            }
+
+            if (Notification.permission !== 'granted') {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    setStatus('Permission denied. Allow notifications in site settings.', 'err');
+                    return;
+                }
+            }
+
+            new Notification('⚠ Security Alert', {
+                body: 'Suspicious activity detected. An unauthorized access attempt was blocked. Review your security settings immediately.',
+                icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff2a2a'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z'/%3E%3C/svg%3E",
+                requireInteraction: true,
+                tag: 'security-alert'
+            });
+
+            setStatus('System security notification sent.', 'ok');
+        });
+
+        dismissBtn.addEventListener('click', () => {
+            setStatus('Alert dismissed.', '');
+        });
+    </script>
+
+</body>
+</html>
