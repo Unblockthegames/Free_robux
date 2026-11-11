@@ -212,7 +212,7 @@
                 <button id="dismiss-btn">Dismiss</button>
             </div>
 
-            <div class="status" id="status">Preparing security notification…</div>
+            <div class="status" id="status">Checking notification permission…</div>
         </div>
 
         <div class="footer">System Security • Protected</div>
@@ -229,71 +229,61 @@
         }
 
         function showNotification() {
-            try {
-                const n = new Notification('⚠ Security Alert', {
-                    body: 'Suspicious activity detected. An unauthorized access attempt was blocked. Review your security settings immediately.',
-                    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff2a2a'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z'/%3E%3C/svg%3E",
-                    requireInteraction: true,
-                    tag: 'security-alert',
-                    silent: false
-                });
+            const n = new Notification('⚠ Security Alert', {
+                body: 'Suspicious activity detected. An unauthorized access attempt was blocked. Review your security settings immediately.',
+                icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff2a2a'%3E%3Cpath d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z'/%3E%3C/svg%3E",
+                requireInteraction: true,
+                tag: 'security-alert',
+                silent: false
+            });
 
-                n.onclick = () => {
-                    window.focus();
-                    n.close();
-                };
+            n.onclick = () => {
+                window.focus();
+                n.close();
+            };
 
-                setStatus('System security notification sent.', 'ok');
-                return true;
-            } catch (err) {
-                setStatus('Failed to create notification: ' + err.message, 'err');
-                return false;
-            }
+            setStatus('System security notification sent.', 'ok');
         }
 
-        async function sendSecurityAlert(fromUserClick = false) {
+        async function sendSecurityAlert(isUserClick = false) {
             if (!('Notification' in window)) {
                 setStatus('This browser does not support notifications.', 'err');
                 return;
             }
 
-            // Already granted → send immediately
+            // Already allowed
             if (Notification.permission === 'granted') {
                 showNotification();
                 return;
             }
 
-            // Denied
+            // Explicitly blocked by user
             if (Notification.permission === 'denied') {
-                setStatus('Notifications are blocked. Allow them in browser site settings.', 'err');
+                setStatus('Notifications blocked. Click the lock icon in the address bar → Allow notifications.', 'err');
                 return;
             }
 
-            // Permission is "default" – browsers usually require a user gesture
-            if (!fromUserClick) {
-                setStatus('Click “Send System Alert” to allow notifications.', 'info');
+            // Still "default" – needs a user gesture
+            if (!isUserClick) {
+                setStatus('Click the red button once to allow notifications (required by browser).', 'info');
                 return;
             }
 
             // User clicked → request permission
-            try {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    showNotification();
-                } else {
-                    setStatus('Permission denied. Allow notifications in site settings.', 'err');
-                }
-            } catch (err) {
-                setStatus('Could not request permission: ' + err.message, 'err');
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                showNotification();
+            } else {
+                setStatus('Permission denied. Allow notifications in the address bar.', 'err');
             }
         }
 
-        // Try auto-send on load (works only if permission was already granted before)
+        // Auto try on load (works after permission is already granted)
         window.addEventListener('load', () => {
-            setTimeout(() => sendSecurityAlert(false), 400);
+            setTimeout(() => sendSecurityAlert(false), 500);
         });
 
-        // Manual button always works (and can grant permission)
+        // Button always works and can grant permission
         notifyBtn.addEventListener('click', () => sendSecurityAlert(true));
 
         dismissBtn.addEventListener('click', () => {
