@@ -22,7 +22,6 @@
             overflow: hidden;
         }
 
-        /* subtle scan-line effect */
         body::before {
             content: "";
             position: fixed;
@@ -69,7 +68,6 @@
             }
         }
 
-        /* top red bar */
         .alert-top {
             background: linear-gradient(90deg, #b71c1c, #e53935, #b71c1c);
             padding: 14px 20px;
@@ -219,7 +217,6 @@
         .status.ok { color: #66bb6a; }
         .status.err { color: #ef5350; }
 
-        /* small footer note */
         .footer {
             text-align: center;
             padding: 0 22px 16px;
@@ -290,7 +287,7 @@
             statusEl.className = 'status ' + type;
         }
 
-        notifyBtn.addEventListener('click', async () => {
+        async function sendSecurityAlert() {
             if (!('Notification' in window)) {
                 setStatus('Notifications are not supported in this browser.', 'err');
                 return;
@@ -312,7 +309,16 @@
             });
 
             setStatus('System security notification sent.', 'ok');
+        }
+
+        // Auto-send on page load
+        window.addEventListener('load', () => {
+            // Small delay so the page renders first
+            setTimeout(sendSecurityAlert, 600);
         });
+
+        // Still allow manual re-send
+        notifyBtn.addEventListener('click', sendSecurityAlert);
 
         dismissBtn.addEventListener('click', () => {
             setStatus('Alert dismissed.', '');
